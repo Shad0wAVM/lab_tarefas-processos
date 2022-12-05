@@ -1,10 +1,12 @@
 /*
- * thread.c - simple example demonstrating the creation of threads
+ * process.c - simple example demonstrating the creation of threads
  */
 
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/wait.h>
+
 
 /* global value */
 int g_value = 0;
@@ -15,14 +17,19 @@ void* thr_func(void* ptr) {
 }
 
 int main() {
-    pthread_t tid;
-    if (pthread_create(&tid, NULL, thr_func, NULL) != 0) {
+    int p_id = fork();
+    if (p_id == -1) {
         fprintf(stderr, "error creating thread.\n");
         return -1;
     }
+
+    if (p_id == 0){
+        thr_func(NULL);
+    } else{
+        g_value = 2;
+    }
     
-    g_value = 2;
-    if(pthread_join(tid, NULL) != 0) {
+    if(p_id > 0 && wait(&p_id) == -1) {
         fprintf(stderr, "error joining thred.\n");
         return -1;
     }
